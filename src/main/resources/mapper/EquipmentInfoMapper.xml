@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.monitor.dao.EquipmentInfoMapper">
+
+    <select id="queryEquipmentListByPage" parameterType="com.monitor.vo.EquipmentQueryVo" resultType="java.util.List">
+            SELECT * FROM tbl_equipment
+            where 1=1
+                <if test="id!=null">
+                    and id=#{id}
+                </if>
+                <if test="equipName!=null and equipName!=''">
+                    and equipment_name=#{equipName}
+                </if>
+                <if test="equipType!=null and equipType!=''">
+                    and equipment_type=#{equipType}
+                </if>
+           limit #{pageNo},#{pageSize}
+
+     </select>
+
+    <select id="queryEquipmentList" resultType="java.util.List">
+        select * from tbl_equipment
+    </select>
+
+</mapper>

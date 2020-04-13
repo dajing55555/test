@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans  xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:task="http://www.springframework.org/schema/task"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+        http://www.springframework.org/schema/task
+        http://www.springframework.org/schema/task/spring-task-4.3.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.3.xsd"
+        default-lazy-init="false">
+
+		<!-- 自动扫描 -->
+         <context:component-scan base-package="com.*.service" />
+		<!-- 引入配置文件 -->
+		<bean id="propertyConfigurer"  class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+            <property name="locations">
+                <list>
+                    <value>classpath:properties/jdbc.properties</value>
+<!--                    <value>classpath:redis.properties</value>-->
+                </list>
+            </property>
+			<!--忽略不可解析的-->
+            <property name="ignoreUnresolvablePlaceholders" value="true" />
+        </bean>
+        <!-- 配置数据源 -->
+        <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+            <property name="driverClassName" value="${jdbc.driverClass}" />
+			<property name="url" value="${jdbc.url}" />
+			<property name="username" value="${jdbc.username}" />
+			<property name="password" value="${jdbc.password}" />
+			<property name="initialSize" value="${jdbc.initialSize}" />
+			<property name="minIdle" value="${jdbc.minIdle}" />
+			<property name="maxIdle" value="${jdbc.maxIdle}" />
+			<property name="maxActive" value="${jdbc.maxActive}" />
+			<property name="maxWait" value="${jdbc.maxWait}" />
+			<property name="defaultAutoCommit" value="${jdbc.defaultAutoCommit}" />
+			<property name="testWhileIdle" value="${jdbc.testWhileIdle}" />
+			<property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
+			<property name="numTestsPerEvictionRun" value="${jdbc.numTestsPerEvictionRun}" />
+			<property name="minEvictableIdleTimeMillis" value="${jdbc.minEvictableIdleTimeMillis}" />
+        </bean>
+        <!-- 配置sqlSessionFactory -->
+        <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+            <property name="configLocation" value="classpath:mybatis-config.xml" />
+            <property name="dataSource" ref="dataSource" />
+            <!-- 自动匹配Mapper映射文件 -->
+            <property name="mapperLocations" value="classpath:mapper/*.xml" />
+            <property name="typeAliasesPackage" value="com.monitor.dao" />
+        </bean>
+        <!-- 通过扫描的模式，扫描在目录下所有的mapper都继承SqlMapper接口的接口， 这样一个bean就可以了 -->
+        <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+            <property name="basePackage" value="com.monitor.dao" />
+        	<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        </bean>
+
+        <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+			<constructor-arg index="0" ref="sqlSessionFactory" />
+		</bean>
+
+		<!--proxy-target-class="true"强制使用cglib代理 如果为false则spring会自动选择 -->
+        <aop:config proxy-target-class="true"></aop:config>
+
+		<tx:advice id="txAdvice" transaction-manager="transactionManager">
+        	<tx:attributes>
+            	<tx:method name="*" read-only="false"/>
+        	</tx:attributes>
+    	</tx:advice>
+
+		<!-- (事务管理)transaction manager,user JtaTransaction for globla tx -->
+    	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        	<property name="dataSource" ref="dataSource"/>
+    	</bean>
+
+    	<!-- 开启事务注解，使用annotation注解方式配置事务  -->
+		<tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager" />
+
+</beans>
