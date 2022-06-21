@@ -12,7 +12,7 @@
   	<!-- spring版本号 -->
     <spring.version>4.3.9.RELEASE</spring.version>
 	<!-- 数据库driver版本号 -->
-	<mysql.version>8.0.17</mysql.version>
+	<mysql.version>8.0.28</mysql.version>
 	<!-- mybatis版本号 -->
     <mybatis.version>3.2.6</mybatis.version>
     <spring.mybatis.version>1.2.3</spring.mybatis.version>
